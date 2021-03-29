@@ -24,7 +24,7 @@ extern "C" {
 #else
     #define FMT_NAME "avfoundation"
     #define DEVICE_NAME ":0"
-    #define FILENAME "/Users/mj/Desktop/out.pcm"
+    #define FILENAME "/Volumes/CodeApp/SourceWork/MJ_QT_Workspace/out.pcm"
 #endif
 
 MainWindow::MainWindow(QWidget *parent)
@@ -44,7 +44,6 @@ void MainWindow::on_audioButton_clicked() {
 
     qDebug() << "on_audioButton_clicked" << QThread::currentThread();
 
-    return;
     // 获取输入格式对象
     AVInputFormat *fmt = av_find_input_format(FMT_NAME);
     if (!fmt) {
@@ -93,4 +92,5 @@ void MainWindow::on_audioButton_clicked() {
 
     // 关闭设备
     avformat_close_input(&ctx);
+    qDebug() << "录音结束" ;
 }
