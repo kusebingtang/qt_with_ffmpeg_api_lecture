@@ -1,7 +1,10 @@
+# 包含了core、gui两个模块
 QT       += core gui
 
+# QT版本大于4，就包含widgets模块
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+# 启用c++11的语法（标准）
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -15,15 +18,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+# 源代码
 SOURCES += \
-    audiothread.cpp \
     main.cpp \
     mainwindow.cpp
 
+# 头文件
 HEADERS += \
-    audiothread.h \
     mainwindow.h
 
+# ui文件
 FORMS += \
     mainwindow.ui
 
@@ -32,18 +36,18 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32 {
-    FFMPEG_HOME = ..
-}
+# 设置FFmpeg头文件的位置，以便Qt能够找到它们
+INCLUDEPATH += ../include
+#INCLUDEPATH += F:/Dev/ffmpeg-4.3.2/include
 
-macx {
-    FFMPEG_HOME = /usr/local/Cellar/ffmpeg/4.3.2_1
-    QMAKE_INFO_PLIST = mac/Info.plist
-}
-
-INCLUDEPATH += $${FFMPEG_HOME}/include
-
-LIBS += -L $${FFMPEG_HOME}/lib \
+# 设置FFmpeg导入库的位置
+#LIBS += -L F:/Dev/ffmpeg-4.3.2/lib \
+LIBS += -L ../lib \
+        -lavcodec \
         -lavdevice \
+        -lavfilter \
         -lavformat \
-        -lavutil
+        -lavutil \
+        -lpostproc \
+        -lswresample \
+        -lswscale
