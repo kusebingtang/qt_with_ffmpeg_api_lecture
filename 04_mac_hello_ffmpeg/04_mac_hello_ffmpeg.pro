@@ -58,8 +58,8 @@ linux: {
 #        -lswresample \
 #        -lavresample
 
-mac: {
-    FFMPEG_HOME = /usr/local/Cellar/ffmpeg/4.3.2
+mac {
+    FFMPEG_HOME = /usr/local/Cellar/ffmpeg/4.3.2_1
 
     INCLUDEPATH += $${FFMPEG_HOME}/include
     LIBS += -L $${FFMPEG_HOME}/lib \

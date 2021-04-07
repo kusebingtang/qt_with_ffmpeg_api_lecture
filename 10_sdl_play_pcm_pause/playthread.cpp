@@ -28,28 +28,6 @@ PlayThread::~PlayThread() {
 int bufferLen;
 char *bufferData;
 
-// 等待音频设备回调(会回调多次)
-void pull_audio_data(void *userdata,
-                     // 需要往stream中填充PCM数据
-                     Uint8 *stream,
-                     // 希望填充的大小(samples * format * channels / 8)
-                     int len
-                    ) {
-    // 清空stream
-    SDL_memset(stream, 0, len);
-
-    // 文件数据还没准备好
-    if (bufferLen <= 0) return;
-
-    // 取len、bufferLen的最小值
-    len = (len > bufferLen) ? bufferLen : len;
-
-    // 填充数据
-    SDL_MixAudio(stream, (Uint8 *) bufferData, len, SDL_MIX_MAXVOLUME);
-    bufferData += len;
-    bufferLen -= len;
-}
-
 /*
 SDL播放音频有2种模式：
 Push（推）：【程序】主动推送数据给【音频设备】
@@ -73,10 +51,12 @@ void PlayThread::run() {
     // 音频缓冲区的样本数量（这个值必须是2的幂）
     spec.samples = 1024;
     // 回调
-    spec.callback = pull_audio_data;
+    spec.callback = NULL;
+    spec.silence = 0;
 
+    SDL_AudioDeviceID deviceID;
     // 打开设备
-    if (SDL_OpenAudio(&spec, nullptr)) {
+    if ((deviceID = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
         qDebug() << "SDL_OpenAudio error" << SDL_GetError();
         // 清除所有的子系统
         SDL_Quit();
@@ -94,25 +74,17 @@ void PlayThread::run() {
         return;
     }
 
-    // 开始播放（0是取消暂停）
-    SDL_PauseAudio(0);
-
-    // 存放从文件中读取的数据
-    char data[BUFFER_SIZE];
-    while (!isInterruptionRequested()) {
-        bufferLen = file.read(data, BUFFER_SIZE);
-        if (bufferLen <= 0) break;
-
-        // 读取到了文件数据
-        bufferData = data;
-
-        // 等待音频数据填充完毕
-        // 只要音频数据还没有填充完毕，就Delay(sleep)
-        while (bufferLen > 0) {
-            SDL_Delay(1);
+    char *buffer = (char *) malloc(BUFFER_SIZE);
+    SDL_PauseAudioDevice(deviceID, 0);
+    while (true) {
+        bufferLen = file.read(buffer, BUFFER_SIZE);
+        if (bufferLen <= 0) {
+            qDebug() << "end of file" ;
+            break;
         }
+        SDL_QueueAudio(deviceID, buffer, BUFFER_SIZE);
     }
-
+    SDL_Delay(12*1000); // 暂停12秒，等待播放完成。在做播放器时，可以通过ffmpeg获取duration时间，做适当延迟。
     // 关闭文件
     file.close();
 
