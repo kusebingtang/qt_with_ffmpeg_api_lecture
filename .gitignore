@@ -2,3 +2,4 @@ build-*-Debug
 .DS_Store
 out.pcm
 **/*.pro.user
+_temp
