@@ -3,3 +3,4 @@ build-*-Debug
 out.pcm
 **/*.pro.user
 _temp
+**/cmake-build-debug/
