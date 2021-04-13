@@ -14,16 +14,16 @@ extern "C" {
 }
 
 #ifdef Q_OS_WIN
-    // 格式名称
-    #define FMT_NAME "dshow"
-    // 设备名称
-    #define DEVICE_NAME "audio=线路输入 (3- 魅声T800)"
-    // PCM文件名
-    #define FILEPATH "F:/"
+// 格式名称
+#define FMT_NAME "dshow"
+// 设备名称
+#define DEVICE_NAME "audio=线路输入 (3- 魅声T800)"
+// PCM文件名
+#define FILEPATH "F:/"
 #else
-    #define FMT_NAME "avfoundation"
-    #define DEVICE_NAME ":0"
-    #define FILEPATH "/Volumes/CodeApp/SourceWork/MJ_QT_Workspace/"
+#define FMT_NAME "avfoundation"
+#define DEVICE_NAME ":0"
+#define FILEPATH "/Volumes/CodeApp/SourceWork/MJ_QT_Workspace/_temp/"
 #endif
 
 AudioThread::AudioThread(QObject *parent) : QThread(parent) {
@@ -93,18 +93,19 @@ void AudioThread::run() {
         if (ret == 0) { // 读取成功
             // 将数据写入文件
             file.write((const char *) pkt.data, pkt.size);
-        } else {
-            // if (ret == AVERROR(EAGAIN))
+        } else if (ret == AVERROR(EAGAIN)) { // 资源临时不可用
+            continue;
+        } else { // 其他错误
             char errbuf[1024];
             av_strerror(ret, errbuf, sizeof (errbuf));
             qDebug() << "av_read_frame error" << errbuf << ret;
             break;
         }
     }
-//    while (!_stop && av_read_frame(ctx, &pkt) == 0) {
-//        // 将数据写入文件
-//        file.write((const char *) pkt.data, pkt.size);
-//    }
+    //    while (!_stop && av_read_frame(ctx, &pkt) == 0) {
+    //        // 将数据写入文件
+    //        file.write((const char *) pkt.data, pkt.size);
+    //    }
 
     // 释放资源
     // 关闭文件
